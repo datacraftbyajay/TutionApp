@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0d0b1e"/>
+<title>મારી ટ્યુશન</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0d0b1e; --bg2:#16122e; --bg3:rgba(255,255,255,0.06);
+  --border:rgba(255,255,255,0.09); --text:#fff;
+  --text2:rgba(255,255,255,0.5); --text3:rgba(255,255,255,0.28);
+  --green:#2ed573; --red:#ff4757; --pink:#f5576c;
+  --purple:#a29bfe; --wa:#25d366; --tg:#2AABEE; --gold:#ffd32a;
+}
+*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+body{ font-family:'Noto Sans Gujarati',sans-serif; background:linear-gradient(160deg,#0d0b1e 0%,#1a1040 50%,#0d1a2e 100%); min-height:100vh; color:var(--text); padding-bottom:85px; overscroll-behavior:none; }
+
+.header{ background:rgba(255,255,255,0.05); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); padding:14px 18px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between; }
+.header-left{ display:flex; align-items:center; gap:10px; }
+.header-icon{ font-size:26px; }
+.header-title{ font-size:17px; font-weight:800; }
+.header-sub{ font-size:11px; color:var(--text2); margin-top:1px; }
+.tg-badge{ font-size:11px; padding:5px 12px; border-radius:20px; font-weight:700; cursor:pointer; border:none; font-family:'Noto Sans Gujarati',sans-serif; transition:all 0.2s; }
+.tg-badge.on{ background:rgba(42,171,238,0.18); color:var(--tg); }
+.tg-badge.off{ background:rgba(255,255,255,0.07); color:var(--text3); }
+
+.toast{ position:fixed; top:68px; left:50%; transform:translateX(-50%); padding:10px 22px; border-radius:30px; font-weight:700; font-size:13px; z-index:9999; box-shadow:0 4px 24px rgba(0,0,0,0.5); white-space:nowrap; opacity:0; pointer-events:none; transition:opacity 0.25s; font-family:'Noto Sans Gujarati',sans-serif; }
+.toast.show{ opacity:1; }
+.toast.ok{ background:var(--green); color:#000; }
+.toast.err{ background:var(--red); color:#fff; }
+.toast.info{ background:#5352ed; color:#fff; }
+.toast.tg{ background:var(--tg); color:#fff; }
+.toast.warn{ background:var(--gold); color:#000; }
+
+.modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.78); align-items:flex-end; justify-content:center; z-index:200; }
+.modal-overlay.show{ display:flex; }
+.modal-overlay.center{ align-items:center; padding:20px; }
+.modal-box{ background:#1a1635; border-radius:24px 24px 0 0; padding:24px 22px 36px; width:100%; max-width:480px; border-top:1px solid rgba(255,255,255,0.1); animation:slideUp 0.25s ease; max-height:90vh; overflow-y:auto; }
+.modal-overlay.center .modal-box{ border-radius:22px; max-width:360px; animation:popIn 0.2s ease; padding-bottom:24px; }
+@keyframes slideUp{ from{ transform:translateY(60px); opacity:0; } to{ transform:translateY(0); opacity:1; } }
+@keyframes popIn{ from{ transform:scale(0.92); opacity:0; } to{ transform:scale(1); opacity:1; } }
+.modal-handle{ width:36px; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; margin:0 auto 18px; }
+.modal-title{ font-weight:800; font-size:17px; margin-bottom:16px; }
+
+.bottom-nav{ position:fixed; bottom:0; left:0; right:0; background:rgba(8,6,22,0.97); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 18px; }
+.nav-btn{ background:none; border:none; color:var(--text3); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 10px; font-family:'Noto Sans Gujarati',sans-serif; transition:color 0.2s; }
+.nav-btn.active{ color:var(--pink); }
+.nav-btn .nav-icon{ font-size:20px; }
+.nav-btn .nav-label{ font-size:10px; }
+.nav-btn.active .nav-label{ font-weight:700; }
+
+.view{ display:none; padding:14px 14px 0; }
+.view.active{ display:block; }
+.sec-title{ font-weight:800; font-size:16px; margin-bottom:14px; }
+.card{ background:var(--bg3); border-radius:18px; padding:14px 16px; margin-bottom:10px; border:1px solid var(--border); }
+
+.month-tabs{ display:flex; gap:8px; overflow-x:auto; margin-bottom:16px; padding-bottom:4px; scrollbar-width:none; }
+.month-tabs::-webkit-scrollbar{ display:none; }
+.month-tab{ flex-shrink:0; padding:6px 14px; border-radius:20px; border:none; color:#fff; cursor:pointer; font-size:13px; background:rgba(255,255,255,0.08); font-family:'Noto Sans Gujarati',sans-serif; transition:all 0.2s; }
+.month-tab.active{ background:linear-gradient(135deg,#f093fb,#f5576c); font-weight:700; }
+
+.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.stat-card{ background:var(--bg3); border-radius:18px; padding:14px; border:1px solid var(--border); }
+.stat-icon{ font-size:20px; margin-bottom:4px; }
+.stat-label{ font-size:11px; color:var(--text2); margin-bottom:2px; }
+.stat-value{ font-size:19px; font-weight:800; }
+.stat-sub{ font-size:11px; color:var(--text3); margin-top:2px; }
+
+.progress-wrap{ background:var(--bg3); border-radius:16px; padding:14px; margin-bottom:16px; border:1px solid var(--border); }
+.progress-header{ display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; }
+.progress-bar-bg{ background:rgba(255,255,255,0.08); border-radius:10px; height:9px; overflow:hidden; }
+.progress-bar{ height:100%; background:linear-gradient(90deg,#2ed573,#7bed9f); border-radius:10px; transition:width 0.5s ease; }
+
+.fee-row{ background:rgba(255,255,255,0.04); border-radius:14px; padding:11px 12px; margin-bottom:8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; transition:border-color 0.2s; }
+.fee-row.paid{ border-color:rgba(46,213,115,0.28); }
+.fee-left{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+.fee-icon{ width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,0.07); display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+.fee-icon.paid{ background:rgba(46,213,115,0.15); }
+.fee-name{ font-weight:600; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fee-meta{ font-size:11px; color:var(--text3); margin-top:1px; }
+.fee-actions{ display:flex; gap:6px; align-items:center; flex-shrink:0; margin-left:8px; }
+.wa-btn{ width:32px; height:32px; border-radius:9px; border:none; background:rgba(37,211,102,0.14); color:var(--wa); cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.pay-btn{ padding:6px 11px; border-radius:9px; border:none; background:linear-gradient(135deg,#2ed573,#7bed9f); color:#000; cursor:pointer; font-weight:700; font-size:12px; font-family:'Noto Sans Gujarati',sans-serif; white-space:nowrap; }
+.pay-btn.paid{ background:rgba(255,71,87,0.15); color:var(--red); }
+
+.att-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.att-month-nav{ background:rgba(255,255,255,0.08); border:none; color:#fff; width:36px; height:36px; border-radius:10px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+.att-month-title{ font-weight:800; font-size:16px; }
+.calendar-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:14px; }
+.cal-day-header{ text-align:center; font-size:10px; color:var(--text3); padding:4px 0; font-weight:600; }
+.cal-day{ aspect-ratio:1; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; border:1px solid transparent; transition:all 0.15s; font-weight:600; background:rgba(255,255,255,0.04); color:var(--text2); }
+.cal-day.empty{ background:transparent; cursor:default; }
+.cal-day.today{ border-color:var(--purple); color:var(--purple); }
+.cal-day.selected{ border-color:var(--pink); background:rgba(245,87,108,0.15); color:var(--pink); }
+.cal-day.has-p{ background:rgba(46,213,115,0.15); color:var(--green); }
+.cal-day.has-a{ background:rgba(255,71,87,0.15); color:var(--red); }
+.cal-day.has-both{ background:linear-gradient(135deg,rgba(46,213,115,0.2),rgba(255,71,87,0.2)); color:#fff; }
+
+.att-row{ background:rgba(255,255,255,0.04); border-radius:14px; padding:11px 13px; margin-bottom:8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; transition:border-color 0.2s; }
+.att-row.present{ border-color:rgba(46,213,115,0.32); }
+.att-row.absent{ border-color:rgba(255,71,87,0.32); }
+.att-btns{ display:flex; gap:8px; }
+.att-btn{ width:40px; height:40px; border-radius:11px; border:none; cursor:pointer; font-weight:800; font-size:15px; font-family:'Noto Sans Gujarati',sans-serif; transition:all 0.2s; }
+.att-btn.P{ background:rgba(46,213,115,0.1); color:var(--green); }
+.att-btn.P.active{ background:var(--green); color:#000; }
+.att-btn.A{ background:rgba(255,71,87,0.1); color:var(--red); }
+.att-btn.A.active{ background:var(--red); color:#fff; }
+
+.mini-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:14px; }
+.mini-card{ background:var(--bg3); border-radius:12px; padding:10px 4px; text-align:center; border:1px solid var(--border); }
+.mini-value{ font-size:18px; font-weight:800; }
+.mini-label{ font-size:9px; color:var(--text2); margin-top:2px; }
+
+.student-card{ background:var(--bg3); border-radius:16px; padding:13px 14px; margin-bottom:9px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.student-avatar{ width:42px; height:42px; border-radius:12px; background:linear-gradient(135deg,#a18cd1,#fbc2eb); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; flex-shrink:0; }
+.s-actions{ display:flex; gap:7px; }
+.icon-btn{ width:34px; height:34px; border-radius:10px; border:none; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; }
+.icon-btn.edit{ background:rgba(162,155,254,0.15); color:var(--purple); }
+.icon-btn.wa{ background:rgba(37,211,102,0.14); color:var(--wa); }
+.icon-btn.del{ background:rgba(255,71,87,0.14); color:var(--red); }
+
+.form-label{ font-size:13px; color:var(--text2); margin-bottom:6px; font-weight:600; display:block; }
+.form-input{ width:100%; padding:12px 15px; border-radius:13px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.06); color:#fff; font-size:15px; outline:none; margin-bottom:13px; font-family:'Noto Sans Gujarati',sans-serif; transition:border-color 0.2s; }
+.form-input:focus{ border-color:rgba(162,155,254,0.5); }
+.form-input::placeholder{ color:rgba(255,255,255,0.25); }
+.class-chips{ display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px; }
+.class-chip{ padding:7px 13px; border-radius:10px; border:none; background:rgba(255,255,255,0.08); color:#fff; cursor:pointer; font-size:13px; font-family:'Noto Sans Gujarati',sans-serif; transition:all 0.2s; }
+.class-chip.active{ background:linear-gradient(135deg,#f093fb,#f5576c); font-weight:700; }
+
+.btn-primary{ width:100%; padding:14px; border-radius:14px; border:none; background:linear-gradient(135deg,#f093fb,#f5576c); color:#fff; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+.btn-ghost{ width:100%; padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.15); background:transparent; color:#fff; font-weight:600; font-size:14px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+.btn-danger{ width:100%; padding:12px; border-radius:14px; border:none; background:var(--red); color:#fff; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+.btn-green{ width:100%; padding:12px; border-radius:14px; border:none; background:linear-gradient(135deg,#2ed573,#7bed9f); color:#000; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+.btn-tg{ width:100%; padding:14px; border-radius:14px; border:none; background:linear-gradient(135deg,#2AABEE,#1a8fc7); color:#fff; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+.btn-tg:disabled{ opacity:0.5; cursor:not-allowed; }
+.btn-purple{ width:100%; padding:12px; border-radius:14px; border:none; background:linear-gradient(135deg,#a18cd1,#8b5cf6); color:#fff; font-weight:700; font-size:15px; cursor:pointer; margin-bottom:10px; font-family:'Noto Sans Gujarati',sans-serif; }
+
+.month-dots{ display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+.month-dot{ font-size:10px; padding:3px 6px; border-radius:6px; background:rgba(255,255,255,0.05); color:var(--text3); border:1px solid transparent; }
+.month-dot.paid{ background:rgba(46,213,115,0.2); color:var(--green); border-color:rgba(46,213,115,0.35); }
+
+.settings-section{ background:var(--bg3); border-radius:18px; padding:16px; margin-bottom:14px; border:1px solid var(--border); }
+.settings-title{ font-weight:800; font-size:15px; margin-bottom:4px; }
+.settings-sub{ font-size:12px; color:var(--text2); margin-bottom:14px; line-height:1.6; }
+.tg-connected-box{ background:rgba(42,171,238,0.08); border:1px solid rgba(42,171,238,0.25); border-radius:14px; padding:13px; margin-bottom:13px; display:flex; align-items:center; gap:10px; }
+.tg-dot{ width:9px; height:9px; border-radius:50%; background:var(--tg); flex-shrink:0; animation:pulse 2s infinite; }
+@keyframes pulse{ 0%,100%{ opacity:1; box-shadow:0 0 0 0 rgba(42,171,238,0.4); } 50%{ opacity:0.7; box-shadow:0 0 0 5px rgba(42,171,238,0); } }
+
+.step-box{ background:rgba(42,171,238,0.07); border:1px solid rgba(42,171,238,0.2); border-radius:14px; padding:14px; margin-bottom:14px; }
+.step-row{ display:flex; gap:10px; margin-bottom:10px; align-items:flex-start; }
+.step-num{ width:24px; height:24px; border-radius:50%; background:var(--tg); color:#fff; font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+.step-text{ font-size:13px; color:var(--text2); line-height:1.6; flex:1; }
+.step-text b{ color:#fff; }
+.code-box{ background:rgba(0,0,0,0.3); border-radius:8px; padding:8px 12px; font-family:monospace; font-size:12px; color:var(--tg); margin-top:4px; word-break:break-all; }
+
+.spinner{ display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+.empty{ text-align:center; padding:40px 20px; }
+.empty-icon{ font-size:50px; margin-bottom:12px; }
+.empty-text{ color:var(--text2); margin-bottom:16px; font-size:14px; }
+.empty-btn{ padding:10px 24px; border-radius:12px; border:none; background:linear-gradient(135deg,#f093fb,#f5576c); color:#fff; font-weight:700; cursor:pointer; font-family:'Noto Sans Gujarati',sans-serif; }
+
+.att-detail-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-bottom:12px; }
+.add-day{ aspect-ratio:1; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+.add-day.P{ background:rgba(46,213,115,0.25); color:var(--green); }
+.add-day.A{ background:rgba(255,71,87,0.25); color:var(--red); }
+.add-day.N{ background:rgba(255,255,255,0.04); color:var(--text3); }
+.add-day.E{ background:transparent; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">📚</div>
+    <div>
+      <div class="header-title">મારી ટ્યુશન</div>
+      <div class="header-sub" id="hdr-sub">લોડ...</div>
+    </div>
+  </div>
+  <button class="tg-badge off" id="tg-badge" onclick="switchView('settings')">📵 Offline</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✏️ Edit કરો</div>
+    <label class="form-label">નામ</label>
+    <input class="form-input" id="edit-name"/>
+    <label class="form-label">ધોરણ</label>
+    <div class="class-chips" id="edit-class-chips"></div>
+    <label class="form-label">માસિક ફી (₹)</label>
+    <input type="number" class="form-input" id="edit-fee"/>
+    <label class="form-label">WhatsApp નંબર</label>
+    <input type="tel" class="form-input" id="edit-phone"/>
+    <button class="btn-purple" onclick="saveEdit()">💾 Save</button>
+    <button class="btn-ghost" onclick="closeModal('edit-modal')" style="margin:0">રદ</button>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay center" id="del-modal">
+  <div class="modal-box">
+    <div style="font-size:34px;text-align:center;margin-bottom:10px">🗑️</div>
+    <div style="text-align:center;font-weight:700;margin-bottom:6px">ખાતરી?</div>
+    <div style="text-align:center;color:var(--text2);margin-bottom:20px;font-size:14px" id="del-name-text"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-ghost" onclick="closeModal('del-modal')" style="margin:0">રહેવા દો</button>
+      <button class="btn-danger" id="del-confirm-btn" style="margin:0">કાઢો</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP MODAL -->
+<div class="modal-overlay" id="wa-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div style="font-size:30px;text-align:center;margin-bottom:8px">💬</div>
+    <div style="text-align:center;font-weight:800;font-size:16px;margin-bottom:4px" id="wa-modal-name"></div>
+    <div style="text-align:center;color:var(--text2);font-size:13px;margin-bottom:20px">WhatsApp message</div>
+    <button class="btn-danger" id="wa-remind-btn">⏳ ફી બાકી — Reminder</button>
+    <button class="btn-green" id="wa-confirm-btn">✅ ફી મળી — Confirm</button>
+    <button class="btn-ghost" onclick="closeModal('wa-modal')" style="margin:0">રદ</button>
+  </div>
+</div>
+
+<!-- ATT DETAIL MODAL -->
+<div class="modal-overlay" id="att-detail-modal">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="att-detail-title"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px" id="att-detail-stats"></div>
+    <div class="att-detail-grid" id="att-detail-grid"></div>
+    <button class="btn-ghost" onclick="closeModal('att-detail-modal')" style="margin:0">બંધ</button>
+  </div>
+</div>
+
+<!-- VIEWS -->
+
+<!-- DASHBOARD -->
+<div class="view active" id="view-dashboard">
+  <div class="month-tabs" id="month-tabs"></div>
+  <div class="stat-grid" id="stat-grid"></div>
+  <div class="progress-wrap" id="progress-wrap" style="display:none">
+    <div class="progress-header">
+      <span style="color:var(--text2)" id="prog-label"></span>
+      <span style="font-weight:700" id="prog-pct">0%</span>
+    </div>
+    <div class="progress-bar-bg"><div class="progress-bar" id="prog-bar" style="width:0%"></div></div>
+  </div>
+  <div class="sec-title" id="dash-title"></div>
+  <div id="fee-list"></div>
+</div>
+
+<!-- ATTENDANCE -->
+<div class="view" id="view-attendance">
+  <div class="att-header">
+    <button class="att-month-nav" onclick="attMonthPrev()">‹</button>
+    <div class="att-month-title" id="att-month-title"></div>
+    <button class="att-month-nav" onclick="attMonthNext()">›</button>
+  </div>
+  <div class="calendar-grid" id="att-calendar"></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div style="font-weight:700;font-size:14px" id="att-selected-label">આજની હાજરી</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="markAllPresent()" style="padding:5px 10px;border-radius:8px;border:none;background:rgba(46,213,115,0.15);color:var(--green);cursor:pointer;font-size:12px;font-family:'Noto Sans Gujarati',sans-serif;font-weight:700">બધા P</button>
+      <button onclick="markAllAbsent()" style="padding:5px 10px;border-radius:8px;border:none;background:rgba(255,71,87,0.15);color:var(--red);cursor:pointer;font-size:12px;font-family:'Noto Sans Gujarati',sans-serif;font-weight:700">બધા A</button>
+    </div>
+  </div>
+  <div class="mini-grid" id="att-stats"></div>
+  <div id="att-list"></div>
+</div>
+
+<!-- ADD -->
+<div class="view" id="view-add">
+  <div class="sec-title" style="text-align:center">✨ નવો વિદ્યાર્થી</div>
+  <label class="form-label">નામ *</label>
+  <input class="form-input" id="add-name" placeholder="દા.ત. રાહુલ પટેલ"/>
+  <label class="form-label">ધોરણ</label>
+  <div class="class-chips" id="class-chips"></div>
+  <label class="form-label">માસિક ફી (₹)</label>
+  <input type="number" class="form-input" id="add-fee" value="300"/>
+  <label class="form-label">WhatsApp નંબર (optional)</label>
+  <input type="tel" class="form-input" id="add-phone" placeholder="વાલીનો નંબર"/>
+  <button class="btn-primary" onclick="addStudent()">✅ ઉમેરો</button>
+</div>
+
+<!-- STUDENTS -->
+<div class="view" id="view-students">
+  <input class="form-input" id="search-input" placeholder="🔍 નામ અથવા ધોરણ..." oninput="renderStudents()" style="margin-bottom:12px"/>
+  <div id="students-list"></div>
+</div>
+
+<!-- FEES -->
+<div class="view" id="view-fees">
+  <div class="sec-title" id="fees-title"></div>
+  <div id="fees-list"></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="view" id="view-settings">
+  <div class="sec-title">⚙️ સેટિંગ્સ</div>
+
+  <div class="settings-section">
+    <div class="settings-title">🔵 Telegram Backup</div>
+    <div class="settings-sub">Bot Token અને Chat ID દાખલ કરો</div>
+
+    <!-- HOW TO GET CHAT ID - shown when not connected -->
+    <div id="howto-box" style="display:none">
+      <div class="step-box">
+        <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--tg)">📖 Chat ID કેવી રીતે મેળવવો?</div>
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-text">Telegram માં તમારા <b>Bot</b> ને open કરો અને <b>/start</b> message મોકલો</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-text">Browser માં આ link ખોલો (TOKEN બદલો):<div class="code-box">https://api.telegram.org/botTOKEN/getUpdates</div></div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-text"><b>"chat":{"id": 123456789}</b> — આ number જ Chat ID છે</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tg-connected-box" id="tg-connected-box" style="display:none">
+      <div class="tg-dot"></div>
+      <div>
+        <div style="font-weight:700;font-size:14px">Connected ✓</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px" id="tg-connected-info"></div>
+      </div>
+    </div>
+
+    <label class="form-label">Bot Token</label>
+    <input class="form-input" id="tg-token" type="password" placeholder="123456:AAxxxxxxxx..." autocomplete="off"/>
+    <label class="form-label">Chat ID <span style="color:var(--text3);font-size:11px">(Channel ID નહીં — Bot સાથે chat ID)</span></label>
+    <input class="form-input" id="tg-chatid" placeholder="123456789" type="number"/>
+    <button class="btn-tg" id="tg-save-btn" onclick="saveTgSettings()">🔵 Connect અને Test કરો</button>
+    <button class="btn-ghost" id="tg-clear-btn" onclick="clearTgSettings()" style="display:none">Disconnect</button>
+  </div>
+
+  <div class="settings-section" id="sync-section" style="display:none">
+    <div class="settings-title">🔄 Data Sync</div>
+    <div class="settings-sub">Telegram Bot ના chat માં backup</div>
+    <button class="btn-tg" id="backup-btn" onclick="backupToTelegram()">☁️ Backup કરો</button>
+    <button class="btn-ghost" id="restore-btn" onclick="restoreFromTelegram()">📥 Restore કરો</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-title">ℹ️ Version 5.0</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.9">
+      📱 Data locally phone માં<br>
+      ☁️ Telegram Bot = cloud backup<br>
+      🔐 Token ફક્ત phone માં<br>
+      📅 Calendar attendance<br>
+      ✏️ Student edit<br>
+      💬 WhatsApp shortcuts
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="nav-btn active" data-view="dashboard" onclick="switchView('dashboard')"><span class="nav-icon">🏠</span><span class="nav-label">હોમ</span></button>
+  <button class="nav-btn" data-view="attendance" onclick="switchView('attendance')"><span class="nav-icon">📋</span><span class="nav-label">હાજરી</span></button>
+  <button class="nav-btn" data-view="add" onclick="switchView('add')"><span class="nav-icon">➕</span><span class="nav-label">ઉમેરો</span></button>
+  <button class="nav-btn" data-view="students" onclick="switchView('students')"><span class="nav-icon">👤</span><span class="nav-label">વિ.</span></button>
+  <button class="nav-btn" data-view="fees" onclick="switchView('fees')"><span class="nav-icon">📊</span><span class="nav-label">ફી</span></button>
+  <button class="nav-btn" data-view="settings" onclick="switchView('settings')"><span class="nav-icon">⚙️</span><span class="nav-label">સેટ</span></button>
+</div>
+
+<script>
+const CLASSES=["LKG","UKG","ધો.1","ધો.2","ધો.3","ધો.4","ધો.5","ધો.6","ધો.7","ધો.8"];
+const MONTHS=["જાન્યુ","ફેબ્રુ","માર્ચ","એપ્રિલ","મે","જૂન","જુલાઈ","ઓગસ્ટ","સપ્ટે","ઓક્ટો","નવે","ડિસે"];
+const FULL_M=["જાન્યુઆરી","ફેબ્રુઆરી","માર્ચ","એપ્રિલ","મે","જૂન","જુલાઈ","ઓગસ્ટ","સપ્ટેમ્બર","ઓક્ટોબર","નવેમ્બર","ડિસેમ્બર"];
+const DEF_FEE={"LKG":300,"UKG":300,"ધો.1":400,"ધો.2":400,"ધો.3":400,"ધો.4":400,"ધો.5":600,"ધો.6":600,"ધો.7":600,"ધો.8":600};
+const CY=new Date().getFullYear(), CM=new Date().getMonth(), CD=new Date().getDate();
+const TODAY=new Date().toISOString().split("T")[0];
+
+let students  =load("t_students",[]);
+let payments  =load("t_payments",{});
+let attendance=load("t_attendance",{});
+let tgToken   =load("t_tg_token","");
+let tgChatId  =load("t_tg_chatid",""); // personal chat id with bot
+let selMonth=CM, selClass="LKG", editClass="LKG", editId=null, waTarget=null, curView="dashboard";
+let attYear=CY, attMonth=CM, attSelDate=TODAY;
+
+function load(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch{ return d; } }
+function save(k,v){ localStorage.setItem(k,JSON.stringify(v)); }
+function saveAll(){ save("t_students",students); save("t_payments",payments); save("t_attendance",attendance); }
+
+let toastTimer;
+function toast(msg,type="ok"){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.className=`toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove("show"),3500);
+}
+
+function openModal(id){ document.getElementById(id).classList.add("show"); }
+function closeModal(id){ document.getElementById(id).classList.remove("show"); }
+
+function switchView(v){
+  curView=v;
+  document.querySelectorAll(".view").forEach(el=>el.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(el=>el.classList.remove("active"));
+  document.getElementById("view-"+v).classList.add("active");
+  const nb=document.querySelector(`[data-view="${v}"]`);
+  if(nb) nb.classList.add("active");
+  render();
+}
+
+const payKey=(id,m)=>`${id}_${CY}_${m}`;
+const attKey=(id,d)=>`${id}_${d}`;
+const isPaid=(id,m)=>!!payments[payKey(id,m)];
+const getAtt=(id,d)=>attendance[attKey(id,d)]||null;
+
+function togglePay(id,m){
+  const k=payKey(id,m);
+  if(payments[k]){ delete payments[k]; toast("ફી દૂર કરી","info"); }
+  else{ payments[k]={date:new Date().toLocaleDateString("gu-IN"),amount:(students.find(s=>s.id===id)||{}).fee||0}; toast("ફી મળી ✓"); }
+  saveAll(); render();
+}
+
+function toggleAtt(id,date,status){
+  const k=attKey(id,date);
+  if(attendance[k]===status) delete attendance[k]; else attendance[k]=status;
+  saveAll(); render();
+}
+
+function markAllPresent(){ students.forEach(s=>{ attendance[attKey(s.id,attSelDate)]="P"; }); saveAll(); toast("બધા હાજર ✓"); render(); }
+function markAllAbsent(){ students.forEach(s=>{ attendance[attKey(s.id,attSelDate)]="A"; }); saveAll(); toast("બધા ગેરહાજર"); render(); }
+
+function attMonthPrev(){ attMonth--; if(attMonth<0){ attMonth=11; attYear--; } render(); }
+function attMonthNext(){ attMonth++; if(attMonth>11){ attMonth=0; attYear++; } render(); }
+
+function openEdit(id){
+  const s=students.find(x=>x.id===id); if(!s) return;
+  editId=id; editClass=s.std;
+  document.getElementById("edit-name").value=s.name;
+  document.getElementById("edit-fee").value=s.fee;
+  document.getElementById("edit-phone").value=s.phone||"";
+  document.getElementById("edit-class-chips").innerHTML=CLASSES.map(c=>
+    `<button class="class-chip ${c===s.std?'active':''}" onclick="selectEditClass('${c}',this)">${c}</button>`
+  ).join("");
+  openModal("edit-modal");
+}
+function selectEditClass(c,btn){ editClass=c; document.querySelectorAll("#edit-class-chips .class-chip").forEach(x=>x.classList.remove("active")); btn.classList.add("active"); document.getElementById("edit-fee").value=DEF_FEE[c]||400; }
+function saveEdit(){
+  const name=document.getElementById("edit-name").value.trim();
+  if(!name){ toast("નામ ભરો","err"); return; }
+  students=students.map(s=>s.id===editId?{...s,name,std:editClass,fee:parseInt(document.getElementById("edit-fee").value)||300,phone:document.getElementById("edit-phone").value.trim()}:s);
+  saveAll(); closeModal("edit-modal"); toast("Update ✓"); render();
+}
+
+function confirmDel(id){
+  const s=students.find(x=>x.id===id);
+  document.getElementById("del-name-text").textContent=`"${s?.name}" ને કાઢી નાખવા?`;
+  document.getElementById("del-confirm-btn").onclick=()=>{ students=students.filter(x=>x.id!==id); saveAll(); closeModal("del-modal"); toast("દૂર","info"); render(); };
+  openModal("del-modal");
+}
+
+function openWA(id){
+  waTarget=students.find(s=>s.id===id);
+  if(!waTarget||!waTarget.phone){ toast("ફોન નંબર નથી!","err"); return; }
+  document.getElementById("wa-modal-name").textContent=waTarget.name;
+  document.getElementById("wa-remind-btn").onclick=()=>sendWA("remind");
+  document.getElementById("wa-confirm-btn").onclick=()=>sendWA("confirm");
+  openModal("wa-modal");
+}
+function sendWA(type){
+  if(!waTarget) return;
+  const m=FULL_M[selMonth];
+  const msg=type==="remind"
+    ?`નમસ્તે 🙏\n\n*${waTarget.name}* ની ${m} મહિનાની ટ્યુશન ફી *₹${waTarget.fee}* હજુ બાકી છે.\n\nકૃપા કરી જલ્દી ભરી દો.\n\nઆભાર 🙏\n— ટ્યુશન ક્લાસ`
+    :`નમસ્તે 🙏\n\n*${waTarget.name}* ની ${m} મહિનાની ટ્યુશન ફી *₹${waTarget.fee}* મળી ગઈ ✅\n\nઆભાર!\n— ટ્યુશન ક્લાસ`;
+  const num=waTarget.phone.replace(/\D/g,"");
+  window.open(`https://wa.me/${num.startsWith("91")?num:"91"+num}?text=${encodeURIComponent(msg)}`,"_blank");
+  closeModal("wa-modal");
+}
+
+function showAttDetail(sid){
+  const s=students.find(x=>x.id===sid); if(!s) return;
+  const days=new Date(attYear,attMonth+1,0).getDate();
+  const firstDay=new Date(attYear,attMonth,1).getDay();
+  let P=0,A=0;
+  for(let d=1;d<=days;d++){
+    const dd=`${attYear}-${String(attMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const v=attendance[attKey(sid,dd)];
+    if(v==="P")P++; if(v==="A")A++;
+  }
+  document.getElementById("att-detail-title").textContent=`${s.name} — ${FULL_M[attMonth]}`;
+  document.getElementById("att-detail-stats").innerHTML=`
+    <div class="mini-card"><div class="mini-value" style="color:var(--green)">${P}</div><div class="mini-label">હાજર</div></div>
+    <div class="mini-card"><div class="mini-value" style="color:var(--red)">${A}</div><div class="mini-label">ગેરહ.</div></div>
+    <div class="mini-card"><div class="mini-value" style="color:var(--text2)">${days-P-A}</div><div class="mini-label">બાકી</div></div>`;
+  let cells=Array(firstDay).fill('<div class="add-day E"></div>');
+  for(let d=1;d<=days;d++){
+    const dd=`${attYear}-${String(attMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    cells.push(`<div class="add-day ${attendance[attKey(sid,dd)]||"N"}">${d}</div>`);
+  }
+  document.getElementById("att-detail-grid").innerHTML=cells.join("");
+  openModal("att-detail-modal");
+}
+
+function addStudent(){
+  const name=document.getElementById("add-name").value.trim();
+  if(!name){ toast("નામ ભરો","err"); return; }
+  students.push({id:Date.now(),name,std:selClass,fee:parseInt(document.getElementById("add-fee").value)||300,phone:document.getElementById("add-phone").value.trim(),joinedYear:CY});
+  saveAll(); document.getElementById("add-name").value=""; document.getElementById("add-phone").value="";
+  toast(`${name} ઉમેર્યા! 🎉`); switchView("students");
+}
+
+// ── TELEGRAM (Direct Bot Chat) ────────────────────────────
+function updateTgBadge(){
+  const b=document.getElementById("tg-badge");
+  if(tgToken&&tgChatId){ b.className="tg-badge on"; b.textContent="🔵 Telegram"; }
+  else{ b.className="tg-badge off"; b.textContent="📵 Offline"; }
+}
+
+async function saveTgSettings(){
+  const token=document.getElementById("tg-token").value.trim();
+  const chatId=document.getElementById("tg-chatid").value.trim();
+  if(!token||!chatId){ toast("Token અને Chat ID ભરો","err"); return; }
+  if(!token.includes(":")){ toast("Token ખોટો","err"); return; }
+  const btn=document.getElementById("tg-save-btn");
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Testing...';
+  try{
+    // Test bot
+    const r=await fetch(`https://api.telegram.org/bot${token}/getMe`);
+    const d=await r.json();
+    if(!d.ok) throw new Error("Token ખોટો: "+d.description);
+    // Send test message to user
+    const r2=await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({chat_id:chatId, text:"✅ ટ્યુશન App connected!\n\nBackup/Restore હવે આ chat માં થશે 📚"})
+    });
+    const d2=await r2.json();
+    if(!d2.ok) throw new Error("Chat ID ખોટો — Bot ને /start message મોકલ્યો? "+d2.description);
+    tgToken=token; tgChatId=chatId;
+    save("t_tg_token",tgToken); save("t_tg_chatid",tgChatId);
+    document.getElementById("tg-token").value="";
+    document.getElementById("tg-chatid").value="";
+    toast("Connected! Telegram ચેક કરો ✓","tg");
+    updateTgBadge(); renderSettings();
+  }catch(e){ toast(e.message,"err"); }
+  finally{ btn.disabled=false; btn.textContent="🔵 Connect અને Test કરો"; }
+}
+
+function clearTgSettings(){
+  tgToken=""; tgChatId="";
+  save("t_tg_token",""); save("t_tg_chatid","");
+  toast("Disconnect","info"); updateTgBadge(); renderSettings();
+}
+
+async function backupToTelegram(){
+  if(!tgToken||!tgChatId){ toast("Telegram connect કરો","err"); return; }
+  const btn=document.getElementById("backup-btn");
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Uploading...';
+  const data={students,payments,attendance,backupDate:new Date().toLocaleString("gu-IN"),version:5};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const form=new FormData();
+  form.append("chat_id",tgChatId);
+  form.append("document",blob,"tuition_backup.json");
+  form.append("caption",`📚 ટ્યુશન Backup\n📅 ${new Date().toLocaleString("gu-IN")}\n👨‍🎓 ${students.length} વિ.\n💰 ${students.reduce((s,x)=>s+x.fee,0)}/મહિ`);
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${tgToken}/sendDocument`,{method:"POST",body:form});
+    const d=await r.json();
+    if(d.ok) toast("Backup સફળ ☁️✓","tg");
+    else toast("Error: "+d.description,"err");
+  }catch(e){ toast("Network error","err"); }
+  finally{ btn.disabled=false; btn.textContent="☁️ Backup કરો"; }
+}
+
+async function restoreFromTelegram(){
+  if(!tgToken||!tgChatId){ toast("Telegram connect કરો","err"); return; }
+  const btn=document.getElementById("restore-btn");
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Restoring...';
+  toast("Backup શોધી રહ્યો...","tg");
+  try{
+    // getUpdates to find latest backup file sent to bot from user
+    const r=await fetch(`https://api.telegram.org/bot${tgToken}/getUpdates?limit=100&offset=-100`);
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.description);
+
+    let fileId=null, fileDate=0;
+    for(const u of(d.result||[])){
+      // Check both message and channel_post
+      const msg=u.message||u.channel_post;
+      if(msg&&msg.document&&msg.document.file_name==="tuition_backup.json"){
+        if((msg.date||0)>=fileDate){ fileDate=msg.date||0; fileId=msg.document.file_id; }
+      }
+    }
+
+    if(!fileId) throw new Error("Backup મળ્યો નહીં — પહેલા ☁️ Backup કરો");
+
+    // Get download URL
+    const fr=await fetch(`https://api.telegram.org/bot${tgToken}/getFile?file_id=${fileId}`);
+    const fd=await fr.json();
+    if(!fd.ok) throw new Error("File error");
+
+    const fileR=await fetch(`https://api.telegram.org/file/bot${tgToken}/${fd.result.file_path}`);
+    if(!fileR.ok) throw new Error("Download failed");
+
+    const backup=await fileR.json();
+    if(backup.students&&Array.isArray(backup.students)){ students=backup.students; save("t_students",students); }
+    if(backup.payments&&typeof backup.payments==="object"){ payments=backup.payments; save("t_payments",payments); }
+    if(backup.attendance&&typeof backup.attendance==="object"){ attendance=backup.attendance; save("t_attendance",attendance); }
+    toast(`Restore ✓ — ${students.length} વિ.`,"tg");
+    render();
+  }catch(e){ toast(e.message,"err"); }
+  finally{ btn.disabled=false; btn.textContent="📥 Restore કરો"; }
+}
+
+// ── RENDER ────────────────────────────────────────────────
+function render(){
+  document.getElementById("hdr-sub").textContent=`${students.length} વિ. • ${CY}`;
+  if(curView==="dashboard")  renderDashboard();
+  if(curView==="attendance") renderAttendance();
+  if(curView==="students")   renderStudents();
+  if(curView==="fees")       renderFees();
+  if(curView==="settings")   renderSettings();
+}
+
+function renderDashboard(){
+  document.getElementById("month-tabs").innerHTML=MONTHS.map((m,i)=>
+    `<button class="month-tab ${i===selMonth?'active':''}" onclick="selMonth=${i};render()">${m}</button>`
+  ).join("");
+  const pC=students.filter(s=>isPaid(s.id,selMonth)).length;
+  const col=students.reduce((sum,s)=>sum+(isPaid(s.id,selMonth)?s.fee:0),0);
+  const due=students.reduce((sum,s)=>sum+(isPaid(s.id,selMonth)?0:s.fee),0);
+  document.getElementById("stat-grid").innerHTML=`
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">મળેલ</div><div class="stat-value" style="color:var(--green)">₹${col.toLocaleString()}</div><div class="stat-sub">${pC} વિ.</div></div>
+    <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">બાકી</div><div class="stat-value" style="color:var(--red)">₹${due.toLocaleString()}</div><div class="stat-sub">${students.length-pC} વિ.</div></div>`;
+  const pw=document.getElementById("progress-wrap");
+  if(students.length>0){
+    const pct=Math.round((pC/students.length)*100);
+    pw.style.display="block";
+    document.getElementById("prog-label").textContent=`ફી વસૂલી — ${MONTHS[selMonth]}`;
+    document.getElementById("prog-pct").textContent=pct+"%";
+    document.getElementById("prog-bar").style.width=pct+"%";
+  } else pw.style.display="none";
+  document.getElementById("dash-title").textContent=`${MONTHS[selMonth]} — ફી સ્થિતિ`;
+  const list=document.getElementById("fee-list");
+  if(!students.length){ list.innerHTML=emptyHTML(); return; }
+  list.innerHTML=students.map(s=>{
+    const paid=isPaid(s.id,selMonth);
+    const pd=(payments[payKey(s.id,selMonth)]||{}).date||"";
+    return `<div class="fee-row ${paid?'paid':''}">
+      <div class="fee-left">
+        <div class="fee-icon ${paid?'paid':''}">${paid?'✅':'⏳'}</div>
+        <div style="min-width:0"><div class="fee-name">${s.name}</div><div class="fee-meta">${s.std} • ₹${s.fee}${pd?` • ${pd}`:''}</div></div>
+      </div>
+      <div class="fee-actions">
+        ${s.phone?`<button class="wa-btn" onclick="openWA(${s.id})">💬</button>`:''}
+        <button class="pay-btn ${paid?'paid':''}" onclick="togglePay(${s.id},${selMonth})">${paid?'રદ':'મળ્યા'}</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function renderAttendance(){
+  document.getElementById("att-month-title").textContent=`${FULL_M[attMonth]} ${attYear}`;
+  const days=new Date(attYear,attMonth+1,0).getDate();
+  const firstDay=new Date(attYear,attMonth,1).getDay();
+  let cal=['<div class="cal-day-header">રવિ</div>','<div class="cal-day-header">સોમ</div>','<div class="cal-day-header">મંગ</div>','<div class="cal-day-header">બુધ</div>','<div class="cal-day-header">ગુ</div>','<div class="cal-day-header">શુ</div>','<div class="cal-day-header">શનિ</div>'];
+  for(let i=0;i<firstDay;i++) cal.push('<div class="cal-day empty"></div>');
+  for(let d=1;d<=days;d++){
+    const dd=`${attYear}-${String(attMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    let P=0,A=0;
+    students.forEach(s=>{ const v=getAtt(s.id,dd); if(v==="P")P++; if(v==="A")A++; });
+    const isToday=(attYear===CY&&attMonth===CM&&d===CD);
+    const isSel=dd===attSelDate;
+    let cls="cal-day";
+    if(isToday) cls+=" today";
+    if(isSel) cls+=" selected";
+    if(P>0&&A>0) cls+=" has-both";
+    else if(P>0) cls+=" has-p";
+    else if(A>0) cls+=" has-a";
+    cal.push(`<div class="${cls}" onclick="selectAttDate('${dd}')">${d}</div>`);
+  }
+  document.getElementById("att-calendar").innerHTML=cal.join("");
+  const selD=new Date(attSelDate);
+  document.getElementById("att-selected-label").textContent=attSelDate===TODAY?"આજની હાજરી":`${selD.getDate()} ${FULL_M[selD.getMonth()]}ની હાજરી`;
+  const P=students.filter(s=>getAtt(s.id,attSelDate)==="P").length;
+  const A=students.filter(s=>getAtt(s.id,attSelDate)==="A").length;
+  document.getElementById("att-stats").innerHTML=`
+    <div class="mini-card"><div class="mini-value" style="color:var(--green)">${P}</div><div class="mini-label">હાજર</div></div>
+    <div class="mini-card"><div class="mini-value" style="color:var(--red)">${A}</div><div class="mini-label">ગેરહ.</div></div>
+    <div class="mini-card"><div class="mini-value" style="color:var(--text2)">${students.length-P-A}</div><div class="mini-label">બાકી</div></div>
+    <div class="mini-card"><div class="mini-value" style="color:var(--purple)">${students.length}</div><div class="mini-label">કુલ</div></div>`;
+  const list=document.getElementById("att-list");
+  if(!students.length){ list.innerHTML=emptyHTML(); return; }
+  list.innerHTML=students.map(s=>{
+    const st=getAtt(s.id,attSelDate);
+    let mP=0,mA=0;
+    for(let d=1;d<=days;d++){
+      const dd=`${attYear}-${String(attMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+      const v=attendance[attKey(s.id,dd)];
+      if(v==="P")mP++; if(v==="A")mA++;
+    }
+    return `<div class="att-row ${st==='P'?'present':st==='A'?'absent':''}">
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="showAttDetail(${s.id})">
+        <div style="font-weight:700;font-size:14px">${s.name}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${s.std} • ${MONTHS[attMonth]}: ${mP}P ${mA}A • 👆 વિગત</div>
+      </div>
+      <div class="att-btns">
+        <button class="att-btn P ${st==='P'?'active':''}" onclick="toggleAtt(${s.id},'${attSelDate}','P')">P</button>
+        <button class="att-btn A ${st==='A'?'active':''}" onclick="toggleAtt(${s.id},'${attSelDate}','A')">A</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function selectAttDate(dd){
+  attSelDate=dd;
+  const d=new Date(dd);
+  attMonth=d.getMonth(); attYear=d.getFullYear();
+  render();
+}
+
+function renderStudents(){
+  const q=(document.getElementById("search-input")||{}).value||"";
+  const f=students.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.std.includes(q));
+  const list=document.getElementById("students-list");
+  if(!f.length){ list.innerHTML=emptyHTML(); return; }
+  list.innerHTML=f.map(s=>`
+    <div class="student-card">
+      <div style="display:flex;align-items:center;flex:1;min-width:0;gap:10px">
+        <div class="student-avatar">${s.name[0]}</div>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:14px">${s.name}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${s.std} • ₹${s.fee}/મહિ${s.phone?` • ${s.phone}`:''}</div>
+        </div>
+      </div>
+      <div class="s-actions">
+        <button class="icon-btn edit" onclick="openEdit(${s.id})">✏️</button>
+        ${s.phone?`<button class="icon-btn wa" onclick="openWA(${s.id})">💬</button>`:''}
+        <button class="icon-btn del" onclick="confirmDel(${s.id})">🗑️</button>
+      </div>
+    </div>`).join("");
+}
+
+function renderFees(){
+  document.getElementById("fees-title").textContent=`📊 વાર્ષિક ફી — ${CY}`;
+  const list=document.getElementById("fees-list");
+  if(!students.length){ list.innerHTML=emptyHTML(); return; }
+  const sorted=[...students].sort((a,b)=>MONTHS.filter((_,i)=>isPaid(a.id,i)).length-MONTHS.filter((_,i)=>isPaid(b.id,i)).length);
+  list.innerHTML=sorted.map(s=>{
+    const pM=MONTHS.filter((_,i)=>isPaid(s.id,i)).length;
+    const pct=Math.round((pM/12)*100);
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;align-items:center">
+        <div><div style="font-weight:700">${s.name}</div><div style="font-size:12px;color:var(--text2)">${s.std} • ₹${s.fee}/મહિ</div></div>
+        <div style="text-align:right"><div style="color:var(--green);font-weight:800">₹${(pM*s.fee).toLocaleString()}</div><div style="font-size:11px;color:var(--text3)">${pM}/12 • ${pct}%</div></div>
+      </div>
+      <div style="background:rgba(255,255,255,0.07);border-radius:6px;height:5px;margin-bottom:8px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#2ed573,#7bed9f);border-radius:6px"></div>
+      </div>
+      <div class="month-dots">${MONTHS.map((m,i)=>`<div class="month-dot ${isPaid(s.id,i)?'paid':''}">${m}</div>`).join("")}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderSettings(){
+  const connected=!!(tgToken&&tgChatId);
+  document.getElementById("tg-connected-box").style.display=connected?"flex":"none";
+  document.getElementById("tg-clear-btn").style.display=connected?"block":"none";
+  document.getElementById("sync-section").style.display=connected?"block":"none";
+  document.getElementById("howto-box").style.display=connected?"none":"block";
+  document.getElementById("tg-save-btn").disabled=false;
+  document.getElementById("tg-save-btn").textContent="🔵 Connect અને Test કરો";
+  if(connected) document.getElementById("tg-connected-info").textContent=`Token: ${tgToken.split(":")[0]}:***** • Chat: ${tgChatId}`;
+}
+
+function emptyHTML(){ return `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">હજુ કોઈ વિ. નથી</div><button class="empty-btn" onclick="switchView('add')">+ ઉમેરો</button></div>`; }
+
+// INIT
+document.getElementById("class-chips").innerHTML=CLASSES.map(c=>
+  `<button class="class-chip ${c==='LKG'?'active':''}" onclick="selectClass('${c}',this)">${c}</button>`
+).join("");
+function selectClass(c,btn){ selClass=c; document.querySelectorAll("#class-chips .class-chip").forEach(x=>x.classList.remove("active")); btn.classList.add("active"); document.getElementById("add-fee").value=DEF_FEE[c]||400; }
+document.querySelectorAll(".modal-overlay").forEach(el=>{ el.addEventListener("click",e=>{ if(e.target===el) el.classList.remove("show"); }); });
+updateTgBadge();
+render();
+</script>
+</body>
+</html>
